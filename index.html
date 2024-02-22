@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <base target="_top">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" 
+            integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" 
+            crossorigin="anonymous"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"
+            integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
+    <!-- SweetAlert2 -->
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        /* สไตล์อื่นๆ ให้ต่อท้ายไป */
+        
+        .register-btn {
+            background-color: #007bff; /* สีน้ำเงิน */
+            color: #fff; /* สีข้อความขาว */
+        }
+
+        .register-btn:hover {
+            background-color: #0056b3; /* เปลี่ยนสีเมื่อโฮเวอร์ */
+        }
+
+        /* CSS สำหรับสไตล์ฟอร์มลงทะเบียน */
+        .registration-form {
+            /* สไตล์ของฟอร์มลงทะเบียน */
+        }
+
+        body {
+            background-color: rgb(34, 246, 0, 5%);
+        }
+        /* สไตล์สำหรับหน้าจอที่มีขนาดเล็กกว่า 1024px */
+        @media (max-width: 1023px) {
+            .responsive-hide {
+                display: none; /* ซ่อนส่วนที่ไม่ต้องการให้แสดง */
+            }
+            /* สามารถเพิ่มสไตล์อื่นๆสำหรับหน้าจอขนาดเล็กได้ที่นี่ */
+        }
+
+        /* สไตล์สำหรับหน้าจอที่มีขนาดใหญ่กว่าหรือเท่ากับ 1024px */
+        @media (min-width: 1024px) {
+            /* สไตล์สำหรับหน้าจอขนาดใหญ่ */
+        }
+
+        .card {
+            width: 400px;
+            margin: auto;
+            margin-top: 30px;
+        }
+
+        .input-group-text {
+            width: 100px;
+            display: inline-block;
+        }
+
+        .mycolor {
+            background-color: #22b100;
+        }
+
+        .color {
+            color: #22b100;
+        }
+
+        .img {
+            width: 60px;
+            margin: auto;
+            display: inline-block;
+        }
+
+        /* CSS สำหรับปุ่ม SweetAlert2 */
+        .swal2-confirm-custom {
+            background-color: green !important; /* กำหนดสีพื้นหลังเป็นสีเขียว */
+            color: white !important; /* กำหนดสีตัวอักษรเป็นสีขาว */
+        }
+
+        .swal2-cancel-size {
+            background-color: #999999  !important; /* กำหนดสีเทาให้กับปุ่ม Cancel */
+        }
+
+        /* CSS สำหรับปุ่ม Submit ใน SweetAlert2 */
+        .swal2-popup {
+            border-color: green; /* กำหนดสีของกรอบป๊อปอัพ */
+        }
+
+        .swal2-confirm-button {
+            background-color: green; /* กำหนดสีของปุ่ม Submit */
+        }
+
+        .swal2-popup {
+            border-color: green; /* กำหนดสีของกรอบป๊อปอัพ */
+        }
+
+        .swal2-confirm-button {
+            background-color: green; /* กำหนดสีของปุ่ม Submit */
+        }
+
+        .register-btn {
+            background-color: #999999; /* เปลี่ยนสีเป็นเทาอ่อน */
+            color: #fff; /* สีข้อความขาว */
+        }
+
+        .register-btn:hover {
+            background-color: #7d7d7d; /* เปลี่ยนสีเมื่อโฮเวอร์เป็นเทาอ่อนเข้มขึ้น */
+        }
+
+      </style>
+    <script>
+        function Login() {
+            var uid = document.getElementById("uid").value;
+            var pass = document.getElementById("pass").value;
+            google.script.run.withSuccessHandler(ReturnMsg).LoginCheck(uid, pass);
+        }
+
+        function ReturnMsg(data) {
+            if (data.success) {
+                sessionStorage.setItem("employeeName", data.employeeName);
+                sessionStorage.setItem("employeeID", data.employeeID);
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'Login successful!',
+                    icon: 'success',
+                    confirmButtonText: 'OK',
+                    showCancelButton: true, // แสดงปุ่ม Cancel
+                    cancelButtonText: 'Change Password', // กำหนดข้อความให้ปุ่ม Cancel
+                    customClass: {
+                        confirmButton: 'swal2-confirm-custom', // กำหนดคลาส CSS สำหรับปุ่ม confirm
+                        cancelButton: 'swal2-confirm-custom swal2-cancel-size' // กำหนดคลาส CSS สำหรับปุ่ม Cancel เท่ากับ ปุ่ม OK
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        google.script.run.withSuccessHandler(OpenMain).OpenPage("main");
+                        setUserName(data.employeeName); // Set the employee name
+                    } else if (result.dismiss === Swal.DismissReason.cancel) {
+                        ChangePassword(data.employeeID); // ถ้าผู้ใช้คลิก "Change Password"
+                    }
+                });
+            } else {
+                $('#RetMsg').html("Incorrect ID or Password !!!").addClass('alert alert-danger');
+                $('#RetMsg').show();
+            }
+        }
+
+        function OpenMain(data) {
+            $('#DivLogin').hide();
+            $('#DivMain').html(data);
+        }
+
+        function ClearText() {
+            $('#RetMsg').html("");
+            $('#RetMsg').hide();
+        }
+
+        function LogOut() {
+            ClearText();
+            document.getElementById("uid").value = '';
+            document.getElementById("pass").value = '';
+            $('#DivLogin').show();
+            $('#DivMain').html("");
+        }
+        
+        function checkDevice() {
+            if (window.innerWidth < 1024) {
+                // แสดงข้อความเตือน
+                alert('This website is best viewed on a PC or in a larger window.');
+            }
+        }
+
+        window.onload = checkDevice;
+        window.onresize = checkDevice;
+
+        function ChangePassword(employeeID) {
+          Swal.fire({
+            title: 'Change Password',
+            html: '<input type="password" id="newPassword" class="swal2-input" placeholder="New Password">',
+            showCancelButton: true,
+            confirmButtonText: 'Confirm',
+            cancelButtonText: 'Cancel',
+            showLoaderOnConfirm: true,
+            preConfirm: () => {
+              const newPassword = Swal.getPopup().querySelector('#newPassword').value;
+              return google.script.run.updatePassword(employeeID, newPassword);
+            },
+            customClass: {
+                confirmButton: 'swal2-confirm-custom', // กำหนดคลาส CSS สำหรับปุ่ม confirm
+                cancelButton: 'swal2-confirm-custom swal2-cancel-size' // กำหนดคลาส CSS สำหรับปุ่ม Cancel เท่ากับ ปุ่ม OK
+            }
+          }).then((result) => {
+            if (result.isConfirmed) {
+              Swal.fire({
+                title: 'Password Changed',
+                text: 'Your password has been successfully changed!',
+                icon: 'success'
+              });
+            }
+          });
+        }
+
+        function Register() {
+            Swal.fire({
+                title: 'Register',
+                html: '<input id="fullname" class="swal2-input" placeholder="ชื่อ-นามสกุล">' +
+                      '<input id="pin" class="swal2-input" placeholder="รหัสพนักงาน">' +
+                      '<input id="id" class="swal2-input" placeholder="ID">' +
+                      '<input type="password" id="password" class="swal2-input" placeholder="Password">',
+                showCancelButton: true,
+                confirmButtonText: 'Submit',
+                cancelButtonText: 'Cancel',
+                preConfirm: () => {
+                    const fullname = Swal.getPopup().querySelector('#fullname').value;
+                    const pin = Swal.getPopup().querySelector('#pin').value;
+                    const id = Swal.getPopup().querySelector('#id').value;
+                    const password = Swal.getPopup().querySelector('#password').value;
+                    return { fullname: fullname, pin: pin, id: id, password: password };
+                },
+                customClass: {
+                    confirmButton: 'swal2-confirm-custom', // กำหนดคลาส CSS สำหรับปุ่ม confirm
+                    cancelButton: 'swal2-confirm-custom swal2-cancel-size' // กำหนดคลาส CSS สำหรับปุ่ม Cancel เท่ากับ ปุ่ม OK
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const data = result.value;
+                    google.script.run.withSuccessHandler(function(response) {
+                        Swal.fire('Registered!', 'Your information has been registered.', 'success');
+                    }).withFailureHandler(function(error) {
+                        Swal.fire('Error!', 'There was a problem with registration.', 'error');
+                    }).registerUser(data);
+                }
+            });
+        }
+
+    </script>
+</head>
+<body>
+    <div id="DivLogin" class="card shadow rounded-4 rounded">
+        <h5 class="card-header bg-secondary- text-white p-3 mycolor">WISDOM Login</h5>
+        <div class="card-body p-4">
+            <center>
+                <i class="bi bi-person-circle fs-1 color"></i>
+            </center>
+            <br>
+
+            <div class="input-group mb-3">
+                <span class="input-group-text"><b>User</b></span>
+                <input type="text" class="form-control" id="uid" placeholder="User ID" onchange="ClearText()">
+            </div>
+
+            <div class="input-group mb-3">
+                <span class="input-group-text"><b>Password</b></span>
+                <input type="password" class="form-control" id="pass" placeholder="password" onchange="ClearText()">
+            </div>
+            <br>
+
+            <div id="RetMsg" class="alert alert-danger" style="display:none" role="alert"></div>
+            <button onclick="Login()" class="btn btn-primary- mycolor float-end px-5 text-white">Login</button>
+            <button onclick="Register()" class="btn btn-primary register-btn">Register</button>
+
+        <div class="registration-form">
+            </div>
+        </div>
+    </div>
+    <div id="DivMain"></div>
+</body>
+</html>
