@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" 
+    integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+    <style>
+        body {
+            background-color: rgb(34, 246, 0, 5%);
+        }
+
+         #employeeNameDisplay {
+        /* your existing styles */
+        color: black; /* change this to any dark color you prefer */
+         }
+
+         #employeeNameDisplay {
+        /* your existing styles, like color: black; */
+        font-weight: bold; /* This line makes the text bold */
+        }
+
+        #clockin {
+            background-color: green; /* สีพื้นหลังเป็นสีเขียว */
+            color: white; /* เปลี่ยนสีตัวอักษรเป็นขาว */
+            /* สไตล์อื่นๆ ตามต้องการ */
+        }
+
+        #clockout {
+            background-color: red; /* สีพื้นหลังเป็นสีแดง */
+            color: white; /* เปลี่ยนสีตัวอักษรเป็นขาว */
+            /* สไตล์อื่นๆ ตามต้องการ */
+        }
+        #break1clockin {
+            background-color: green; /* สีพื้นหลังเป็นสีเขียว */
+            color: white; /* เปลี่ยนสีตัวอักษรเป็นขาว */
+            /* สไตล์อื่นๆ ตามต้องการ */
+        }
+
+        #break1clockout {
+            background-color: red; /* สีพื้นหลังเป็นสีแดง */
+            color: white; /* เปลี่ยนสีตัวอักษรเป็นขาว */
+            /* สไตล์อื่นๆ ตามต้องการ */
+        }
+        #break2clockin {
+            background-color: green; /* สีพื้นหลังเป็นสีเขียว */
+            color: white; /* เปลี่ยนสีตัวอักษรเป็นขาว */
+            /* สไตล์อื่นๆ ตามต้องการ */
+        }
+
+        #break2clockout {
+            background-color: red; /* สีพื้นหลังเป็นสีแดง */
+            color: white; /* เปลี่ยนสีตัวอักษรเป็นขาว */
+            /* สไตล์อื่นๆ ตามต้องการ */
+        }
+        #bathroomclockin {
+            background-color: green; /* สีพื้นหลังเป็นสีเขียว */
+            color: white; /* เปลี่ยนสีตัวอักษรเป็นขาว */
+            /* สไตล์อื่นๆ ตามต้องการ */
+        }
+
+        #bathroomclockout {
+            background-color: red; /* สีพื้นหลังเป็นสีแดง */
+            color: white; /* เปลี่ยนสีตัวอักษรเป็นขาว */
+            /* สไตล์อื่นๆ ตามต้องการ */
+        }
+        #businessclockin {
+            background-color: green; /* สีพื้นหลังเป็นสีเขียว */
+            color: white; /* เปลี่ยนสีตัวอักษรเป็นขาว */
+            /* สไตล์อื่นๆ ตามต้องการ */
+        }
+
+        #businessclockout {
+            background-color: red; /* สีพื้นหลังเป็นสีแดง */
+            color: white; /* เปลี่ยนสีตัวอักษรเป็นขาว */
+            /* สไตล์อื่นๆ ตามต้องการ */
+        }
+
+        .swal2-confirm {
+            background-color: green !important; /* กำหนดสีพื้นหลังเป็นสีเขียว */
+            color: white !important; /* กำหนดสีตัวอักษรเป็นสีขาว */
+        }
+
+    </style>
+  <script>
+      
+      $(document).ready(function() {
+        getLoggedInEmployee();
+        setInterval(updateDigitalClock, 1000);
+      });
+
+      function getLoggedInEmployee() {
+        var loggedInEmployeeID = sessionStorage.getItem("employeeID");
+        
+        if (loggedInEmployeeID) {
+          google.script.run.withSuccessHandler(function(employeeData) {
+            if (employeeData) {
+              // Display the employee name
+              $('#employeeNameDisplay').text(employeeData[0]); // Assuming name is in the 2nd column
+            } else {
+              console.log("Employee data not found.");
+            }
+          }).getEmployeeData(loggedInEmployeeID);
+        } else {
+          console.log("No logged-in user found.");
+        }
+      }
+    
+      function ClockIn() {
+          var pin = $('#employeePassword').val(); // Only need to get the PIN from the input field
+
+          if (pin) { // Check if the pin is entered
+              google.script.run
+                  .withSuccessHandler(function(ar) {
+                      var message = "";
+                      var isSuccess = false;
+
+                      // Process the response from the server
+                      ar.forEach(function(item) {
+                          if (item[0] == 'SUCCESS') {
+                              message += 'ลงเวลาทำงานสำเร็จ ' + item[1] + "<br/>";
+                              isSuccess = true;
+                          } else {
+                              message += 'Error: ' + item[0] + "<br/>";
+                          }
+                      });
+
+                      // Update the message on the page
+                      $('#message').html(message);
+                      $('#employeePassword').val(''); // Reset the PIN field
+
+                      // Show success or error message
+                      if (isSuccess) {
+                          document.getElementById("message").className = "alert alert-success";
+                          Swal.fire({
+                              title: 'Success!',
+                              text: 'ลงเวลาทำงานสำเร็จ',
+                              icon: 'success',
+                              confirmButtonText: 'OK',
+                              customClass: {
+                                  confirmButton: 'swal2-confirm-custom' // ใช้คลาส CSS ที่ถูกต้อง
+                              }
+                          });
+                      } else {
+                          document.getElementById("message").className = "alert alert-danger";
+                      }
+                  })
+                  .withFailureHandler(function(error) {
+                      // Handle any errors that occur during the server call
+                      $('#message').html("Error: " + error.message).addClass('alert alert-danger');
+                      $('#employeePassword').val(''); // Reset PIN field on failure too
+                      Swal.fire({
+                          title: 'Error!',
+                          text: error.message,
+                          icon: 'error',
+                          confirmButtonText: 'OK',
+                          customClass: {
+                              confirmButton: 'swal2-confirm-custom' // ใช้คลาส CSS ที่ถูกต้อง
+                          }
+                      });
+                  })
+                  .clockInWithPin(pin); // Call the server-side function with the PIN
+          } else {
+              // If the PIN field is empty, show an error
+              $('#message').html("กรุณากรอกรหัส PIN ของคุณ.").addClass('alert alert-danger');
+          }
+      }
+
+      function ClockOut() {
+          var pin = $('#employeePassword').val(); // Only need to get the PIN from the input field
+
+          if (pin) { // Check if the PIN is entered
+              google.script.run
+                  .withSuccessHandler(function(ar) {
+                      var message = "";
+                      var isSuccess = false;
+
+                      // Process the response from the server
+                      ar.forEach(function(item) {
+                          if (item[0] == 'SUCCESS') {
+                              message += 'ลงเวลากลับจากทำงานสำเร็จ ' + item[1] + "<br/>";
+                              isSuccess = true;
+                          } else {
+                              message += 'Error: ' + item[0] + "<br/>";
+                          }
+                      });
+
+                      // Update the message on the page
+                      $('#message').html(message);
+                      $('#employeePassword').val(''); // Reset the PIN field
+
+                      // Show success or error message
+                      if (isSuccess) {
+                          document.getElementById("message").className = "alert alert-success";
+                          Swal.fire({
+                              title: 'Success!',
+                              text: 'ลงเวลากลับจากทำงานสำเร็จ!',
+                              icon: 'success',
+                              confirmButtonText: 'OK',
+                              customClass: {
+                                  confirmButton: 'swal2-confirm-custom' // กำหนดคลาส CSS สำหรับปุ่ม confirm
+                              }
+                          });
+                      } else {
+                          document.getElementById("message").className = "alert alert-danger";
+                      }
+                  })
+                  .withFailureHandler(function(error) {
+                      // Handle any errors that occur during the server call
+                      $('#message').html("Error: " + error.message).addClass('alert alert-danger');
+                      $('#employeePassword').val(''); // Reset the PIN field on failure too
+                      Swal.fire({
+                          title: 'Error!',
+                          text: error.message,
+                          icon: 'error',
+                          confirmButtonText: 'OK',
+                          customClass: {
+                              confirmButton: 'swal2-confirm-custom' // กำหนดคลาส CSS สำหรับปุ่ม confirm
+                          }
+                      });
+                  })
+                  .clockOutWithPin(pin); // Call the server-side function with the PIN
+          } else {
+              // If the PIN field is empty, show an error
+              $('#message').html("กรุณากรอกรหัส PIN ของคุณ.").addClass('alert alert-danger');
+          }
+      }
+    
+      var break1Timeout; // Global timeout reference
+
+      function Break1ClockIn() {
+          var pin = $('#employeePassword').val(); // Only need to get the PIN from the input field
+
+          if (pin) { // Check if the pin is entered
+              google.script.run
+                  .withSuccessHandler(function(ar) {
+                      var message = "";
+                      var isSuccess = false;
+
+                      // Process the response from the server
+                      ar.forEach(function(item) {
+                          if (item[0] == 'SUCCESS') {
+                              message += 'ลงเวลาพักครั้งที่1สำเร็จ ' + item[1] + "<br/>";
+                              isSuccess = true;
+                          } else {
+                              message += 'Error: ' + item[0] + "<br/>";
+                          }
+                      });
+
+                      // Update the message on the page
+                      $('#message').html(message);
+                      $('#employeePassword').val(''); // Reset the PIN field
+
+                      // Show success or error message
+                      if (isSuccess) {
+                          document.getElementById("message").className = "alert alert-success";
+                          Swal.fire({
+                              title: 'Success!',
+                              text: 'ลงเวลาพักครั้งที่1สำเร็จ!',
+                              icon: 'success',
+                              confirmButtonText: 'OK',
+                              customClass: {
+                                  confirmButton: 'swal2-confirm-custom' // ใช้คลาส CSS ที่ถูกต้อง
+                              }
+                          });
+
+                          // Clear any existing timeout
+                          clearTimeout(break1Timeout);
+                          
+                          // Set a new timeout for 50 minutes
+                          break1Timeout = setTimeout(function() {
+                              Swal.fire({
+                                  title: 'Reminder!',
+                                  text: 'It has been 50 minutes. Please clock out if you have returned.',
+                                  icon: 'warning',
+                                  confirmButtonText: 'OK',
+                                  customClass: {
+                                      confirmButton: 'swal2-confirm-custom' // ใช้คลาส CSS ที่ถูกต้อง
+                                  }
+                              });
+                          }, 3000000); // 3000000 milliseconds = 50 minutes
+                      } else {
+                          document.getElementById("message").className = "alert alert-danger";
+                      }
+                  })
+                  .withFailureHandler(function(error) {
+                      // Handle any errors that occur during the server call
+                      $('#message').html("Error: " + error.message).addClass('alert alert-danger');
+                      $('#employeePassword').val(''); // Reset PIN field on failure too
+                      Swal.fire({
+                          title: 'Error!',
+                          text: error.message,
+                          icon: 'error',
+                          confirmButtonText: 'OK',
+                          customClass: {
+                              confirmButton: 'swal2-confirm-custom' // ใช้คลาส CSS ที่ถูกต้อง
+                          }
+                      });
+                  })
+                  .break1clockInWithPin(pin); // Call the server-side function with the PIN
+          } else {
+              // If the PIN field is empty, show an error
+              $('#message').html("กรุณากรอกรหัส PIN ของคุณ.").addClass('alert alert-danger');
+          }
+      }
+
+      function Break1ClockOut() {
+          var pin = $('#employeePassword').val(); // Only need to get the PIN from the input field
+
+          if (pin) { // Check if the PIN is entered
+              google.script.run
+                  .withSuccessHandler(function(ar) {
+                      var message = "";
+                      var isSuccess = false;
+
+                      // Process the response from the server
+                      ar.forEach(function(item) {
+                          if (item[0] == 'SUCCESS') {
+                              message += 'ลงเวลากลับจากพักครั้งที่1สำเร็จ ' + item[1] + "<br/>";
+                              isSuccess = true;
+                          } else {
+                              message += 'Error: ' + item[0] + "<br/>";
+                          }
+                      });
+
+                      // Update the message on the page
+                      $('#message').html(message);
+                      $('#employeePassword').val(''); // Reset the PIN field
+
+                      // Show success or error message
+                      if (isSuccess) {
+                          document.getElementById("message").className = "alert alert-success";
+                          Swal.fire({
+                              title: 'Success!',
+                              text: 'ลงเวลากลับจากพักครั้งที่1สำเร็จ!',
+                              icon: 'success',
+                              confirmButtonText: 'OK',
+                              customClass: {
+                                  confirmButton: 'swal2-confirm-custom' // ใช้คลาส CSS ที่ถูกต้อง
+                              }
+                          });
+
+                          // Cancel the timeout
+                          clearTimeout(break1Timeout);
+                      } else {
+                          document.getElementById("message").className = "alert alert-danger";
+                      }
+                  })
+                  .withFailureHandler(function(error) {
+                      // Handle any errors that occur during the server call
+                      $('#message').html("Error: " + error.message).addClass('alert alert-danger');
+                      $('#employeePassword').val(''); // Reset the PIN field on failure too
+                      Swal.fire({
+                          title: 'Error!',
+                          text: error.message,
+                          icon: 'error',
+                          confirmButtonText: 'OK',
+                          customClass: {
+                              confirmButton: 'swal2-confirm-custom' // ใช้คลาส CSS ที่ถูกต้อง
+                          }
+                      });
+                  })
+                  .break1clockOutWithPin(pin); // Call the server-side function with the PIN
+          } else {
+              // If the PIN field is empty, show an error
+              $('#message').html("กรุณากรอกรหัส PIN ของคุณ.").addClass('alert alert-danger');
+          }
+      }
+
+      var break2Timeout; // Global timeout reference
+
+      function Break2ClockIn() {
+          var pin = $('#employeePassword').val(); // Only need to get the PIN from the input field
+
+          if (pin) { // Check if the pin is entered
+              google.script.run
+                  .withSuccessHandler(function(ar) {
+                      var message = "";
+                      var isSuccess = false;
+
+                      // Process the response from the server
+                      ar.forEach(function(item) {
+                          if (item[0] == 'SUCCESS') {
+                              message += 'ลงเวลาพักครั้งที่2สำเร็จ ' + item[1] + "<br/>";
+                              isSuccess = true;
+                          } else {
+                              message += 'Error: ' + item[0] + "<br/>";
+                          }
+                      });
+
+                      // Update the message on the page
+                      $('#message').html(message);
+                      $('#employeePassword').val(''); // Reset the PIN field
+
+                      // Show success or error message
+                      if (isSuccess) {
+                          document.getElementById("message").className = "alert alert-success";
+                          Swal.fire({
+                              title: 'Success!',
+                              text: 'ลงเวลาพักครั้งที่2สำเร็จ!',
+                              icon: 'success',
+                              confirmButtonText: 'OK',
+                              customClass: {
+                                  confirmButton: 'swal2-confirm-custom' // ใช้คลาส CSS ที่ถูกต้อง
+                              }
+                          });
+
+                          // Clear any existing timeout
+                          clearTimeout(break2Timeout);
+                          
+                          // Set a new timeout for 50 minutes
+                          break2Timeout = setTimeout(function() {
+                              Swal.fire({
+                                  title: 'Reminder!',
+                                  text: 'ผ่านไป 50 นาทีแล้ว กรุณาตอกบัตรหากคุณกลับมาแล้ว.',
+                                  icon: 'warning',
+                                  confirmButtonText: 'OK',
+                                  customClass: {
+                                      confirmButton: 'swal2-confirm-custom' // ใช้คลาส CSS ที่ถูกต้อง
+                                  }
+                              });
+                          }, 3000000); // 3000000 milliseconds = 50 minutes
+                      } else {
+                          document.getElementById("message").className = "alert alert-danger";
+                      }
+                  })
+                  .withFailureHandler(function(error) {
+                      // Handle any errors that occur during the server call
+                      $('#message').html("Error: " + error.message).addClass('alert alert-danger');
+                      $('#employeePassword').val(''); // Reset PIN field on failure too
+                      Swal.fire({
+                          title: 'Error!',
+                          text: error.message,
+                          icon: 'error',
+                          confirmButtonText: 'OK',
+                          customClass: {
+                              confirmButton: 'swal2-confirm-custom' // ใช้คลาส CSS ที่ถูกต้อง
+                          }
+                      });
+                  })
+                  .break2clockInWithPin(pin); // Call the server-side function with the PIN
+          } else {
+              // If the PIN field is empty, show an error
+              $('#message').html("กรุณากรอกรหัส PIN ของคุณ.").addClass('alert alert-danger');
+          }
+      }
+
+      function Break2ClockOut() {
+          var pin = $('#employeePassword').val(); // Only need to get the PIN from the input field
+
+          if (pin) { // Check if the PIN is entered
+              google.script.run
+                  .withSuccessHandler(function(ar) {
+                      var message = "";
+                      var isSuccess = false;
+
+                      // Process the response from the server
+                      ar.forEach(function(item) {
+                          if (item[0] == 'SUCCESS') {
+                              message += 'ลงเวลากลับจากพักครั้งที่2สำเร็จ ' + item[1] + "<br/>";
+                              isSuccess = true;
+                          } else {
+                              message += 'Error: ' + item[0] + "<br/>";
+                          }
+                      });
+
+                      // Update the message on the page
+                      $('#message').html(message);
+                      $('#employeePassword').val(''); // Reset the PIN field
+
+                      // Show success or error message
+                      if (isSuccess) {
+                          document.getElementById("message").className = "alert alert-success";
+                          Swal.fire({
+                              title: 'Success!',
+                              text: 'ลงเวลากลับจากพักครั้งที่2สำเร็จ!',
+                              icon: 'success',
+                              confirmButtonText: 'OK',
+                              customClass: {
+                                  confirmButton: 'swal2-confirm-custom' // ใช้คลาส CSS ที่ถูกต้อง
+                              }
+                          });
+
+                          // Cancel the timeout
+                          clearTimeout(break2Timeout);
+                      } else {
+                          document.getElementById("message").className = "alert alert-danger";
+                      }
+                  })
+                  .withFailureHandler(function(error) {
+                      // Handle any errors that occur during the server call
+                      $('#message').html("Error: " + error.message).addClass('alert alert-danger');
+                      $('#employeePassword').val(''); // Reset the PIN field on failure too
+                      Swal.fire({
+                          title: 'Error!',
+                          text: error.message,
+                          icon: 'error',
+                          confirmButtonText: 'OK',
+                          customClass: {
+                              confirmButton: 'swal2-confirm-custom' // ใช้คลาส CSS ที่ถูกต้อง
+                          }
+                      });
+                  })
+                  .break2clockOutWithPin(pin); // Call the server-side function with the PIN
+          } else {
+              // If the PIN field is empty, show an error
+              $('#message').html("กรุณากรอกรหัส PIN ของคุณ.").addClass('alert alert-danger');
+          }
+      }
+      
+      var bathroomTimeout; // Global timeout reference
+
+      function BathroomClockIn() {
+          var pin = $('#employeePassword').val(); // Only need to get the PIN from the input field
+
+          if (pin) { // Check if the pin is entered
+              google.script.run
+                  .withSuccessHandler(function(ar) {
+                      var message = "";
+                      var isSuccess = false;
+
+                      // Process the response from the server
+                      ar.forEach(function(item) {
+                          if (item[0] == 'SUCCESS') {
+                              message += 'ลงเวลาเข้าห้องน้ำสำเร็จ ' + item[1] + "<br/>";
+                              isSuccess = true;
+                          } else {
+                              message += 'Error: ' + item[0] + "<br/>";
+                          }
+                      });
+
+                      // Update the message on the page
+                      $('#message').html(message);
+                      $('#employeePassword').val(''); // Reset the PIN field
+
+                      // Show success or error message
+                      if (isSuccess) {
+                          document.getElementById("message").className = "alert alert-success";
+                          Swal.fire({
+                              title: 'Success!',
+                              text: 'ลงเวลาเข้าห้องน้ำสำเร็จ!',
+                              icon: 'success',
+                              confirmButtonText: 'OK',
+                              customClass: {
+                                  confirmButton: 'swal2-confirm-custom' // ใช้คลาส CSS ที่ถูกต้อง
+                              }
+                          });
+
+                          // Clear any existing timeout
+                          clearTimeout(bathroomTimeout);
+                          
+                          // Set a new timeout for 10 minutes
+                          bathroomTimeout = setTimeout(function() {
+                              Swal.fire({
+                                  title: 'Reminder!',
+                                  text: 'ผ่านไป 10 นาทีแล้ว กรุณาตอกบัตรหากคุณกลับมาแล้ว.',
+                                  icon: 'warning',
+                                  confirmButtonText: 'OK',
+                                  customClass: {
+                                      confirmButton: 'swal2-confirm-custom' // ใช้คลาส CSS ที่ถูกต้อง
+                                  }
+                              });
+                          }, 420000); // 420000 milliseconds = 7 minutes
+                      } else {
+                          document.getElementById("message").className = "alert alert-danger";
+                      }
+                  })
+                  .withFailureHandler(function(error) {
+                      // Handle any errors that occur during the server call
+                      $('#message').html("Error: " + error.message).addClass('alert alert-danger');
+                      $('#employeePassword').val(''); // Reset PIN field on failure too
+                      Swal.fire({
+                          title: 'Error!',
+                          text: error.message,
+                          icon: 'error',
+                          confirmButtonText: 'OK',
+                          customClass: {
+                              confirmButton: 'swal2-confirm-custom' // ใช้คลาส CSS ที่ถูกต้อง
+                          }
+                      });
+                  })
+                  .bathroomclockInWithPin(pin); // Call the server-side function with the PIN
+          } else {
+              // If the PIN field is empty, show an error
+              $('#message').html("กรุณากรอกรหัส PIN ของคุณ.").addClass('alert alert-danger');
+          }
+      }
+
+      function BathroomClockOut() {
+          var pin = $('#employeePassword').val(); // Only need to get the PIN from the input field
+
+          if (pin) { // Check if the PIN is entered
+              google.script.run
+                  .withSuccessHandler(function(ar) {
+                      var message = "";
+                      var isSuccess = false;
+
+                      // Process the response from the server
+                      ar.forEach(function(item) {
+                          if (item[0] == 'SUCCESS') {
+                              message += 'ลงเวลากลับจากเข้าห้องน้ำสำเร็จ ' + item[1] + "<br/>";
+                              isSuccess = true;
+                          } else {
+                              message += 'Error: ' + item[0] + "<br/>";
+                          }
+                      });
+
+                      // Update the message on the page
+                      $('#message').html(message);
+                      $('#employeePassword').val(''); // Reset the PIN field
+
+                      // Show success or error message
+                      if (isSuccess) {
+                          document.getElementById("message").className = "alert alert-success";
+                          Swal.fire({
+                              title: 'Success!',
+                              text: 'ลงเวลากลับจากเข้าห้องน้ำสำเร็จ!',
+                              icon: 'success',
+                              confirmButtonText: 'OK',
+                              customClass: {
+                                  confirmButton: 'swal2-confirm-custom' // ใช้คลาส CSS ที่ถูกต้อง
+                              }
+                          });
+
+                          // Cancel the timeout
+                          clearTimeout(bathroomTimeout);
+                      } else {
+                          document.getElementById("message").className = "alert alert-danger";
+                      }
+                  })
+                  .withFailureHandler(function(error) {
+                      // Handle any errors that occur during the server call
+                      $('#message').html("Error: " + error.message).addClass('alert alert-danger');
+                      $('#employeePassword').val(''); // Reset the PIN field on failure too
+                      Swal.fire({
+                          title: 'Error!',
+                          text: error.message,
+                          icon: 'error',
+                          confirmButtonText: 'OK',
+                          customClass: {
+                              confirmButton: 'swal2-confirm-custom' // ใช้คลาส CSS ที่ถูกต้อง
+                          }
+                      });
+                  })
+                  .bathroomclockOutWithPin(pin); // Call the server-side function with the PIN
+          } else {
+              // If the PIN field is empty, show an error
+              $('#message').html("กรุณากรอกรหัส PIN ของคุณ.").addClass('alert alert-danger');
+          }
+      }
+
+      function BusinessClockIn() {
+          var pin = $('#employeePassword').val(); // Get the PIN from the input field
+
+          if (pin) {
+              // Prompt for a note using SweetAlert2
+              Swal.fire({
+                  title: 'บันทึกหมายเหตุ',
+                  input: 'textarea',
+                  inputPlaceholder: 'Type your note here...',
+                  showCancelButton: true,
+                  confirmButtonText: 'ยืนยัน',
+                  cancelButtonText: 'ยกเลิก',
+                  inputValidator: (value) => {
+                      if (!value) {
+                          return 'You need to write something!';
+                      }
+                  },
+                  customClass: {
+                      confirmButton: 'swal2-confirm-custom', // Use the correct CSS class
+                      cancelButton: 'swal2-cancel-custom'
+                  }
+              }).then(function(result) {
+                  if (result.value) {
+                      var note = result.value; // Get the note from the popup
+
+                      // Now call the server function with PIN and note
+                      google.script.run
+                          .withSuccessHandler(function(ar) {
+                              // Process the response from the server
+                              var message = "";
+                              var isSuccess = false;
+
+                              ar.forEach(function(item) {
+                                  if (item[0] == 'SUCCESS') {
+                                      message += 'บันทึกข้อมูลสำเร็จ ' + item[1] + "<br/>";
+                                      isSuccess = true;
+                                  } else {
+                                      message += 'Error: ' + item[0] + "<br/>";
+                                  }
+                              });
+
+                              // Update the message on the page
+                              $('#message').html(message);
+
+                              // Show success or error message
+                              if (isSuccess) {
+                                  document.getElementById("message").className = "alert alert-success";
+                                  Swal.fire({
+                                      title: 'Success!',
+                                      text: 'บันทึกข้อมูลสำเร็จ!',
+                                      icon: 'success',
+                                      confirmButtonText: 'OK',
+                                      customClass: {
+                                          confirmButton: 'swal2-confirm-custom' // Use the correct CSS class
+                                      }
+                                  });
+                              } else {
+                                  document.getElementById("message").className = "alert alert-danger";
+                              }
+
+                              $('#employeePassword').val(''); // Reset the PIN field
+                          })
+                          .withFailureHandler(function(error) {
+                              // Handle any errors that occur during the server call
+                              $('#message').html("Error: " + error.message).addClass('alert alert-danger');
+                              $('#employeePassword').val(''); // Reset PIN field on failure too
+                              Swal.fire({
+                                  title: 'Error!',
+                                  text: error.message,
+                                  icon: 'error',
+                                  confirmButtonText: 'OK',
+                                  customClass: {
+                                      confirmButton: 'swal2-confirm-custom' // Use the correct CSS class
+                                  }
+                              });
+                          })
+                          .businessclockInWithPinAndNote(pin, note); // Call the server-side function with the PIN and note
+                  }
+              });
+          } else {
+              // If the PIN field is empty, show an error
+              $('#message').html("กรุณากรอกรหัส PIN ของคุณ.").addClass('alert alert-danger');
+          }
+      }
+
+      function BusinessClockOut() {
+          var pin = $('#employeePassword').val(); // Only need to get the PIN from the input field
+
+          if (pin) { // Check if the PIN is entered
+              google.script.run
+                  .withSuccessHandler(function(ar) {
+                      var message = "";
+                      var isSuccess = false;
+
+                      // Process the response from the server
+                      ar.forEach(function(item) {
+                          if (item[0] == 'SUCCESS') {
+                              message += 'บันทึกข้อมูลสำเร็จ ' + item[1] + "<br/>";
+                              isSuccess = true;
+                          } else {
+                              message += 'Error: ' + item[0] + "<br/>";
+                          }
+                      });
+
+                      // Update the message on the page
+                      $('#message').html(message);
+                      $('#employeePassword').val(''); // Reset the PIN field
+
+                      // Show success or error message
+                      if (isSuccess) {
+                          document.getElementById("message").className = "alert alert-success";
+                          Swal.fire({
+                              title: 'Success!',
+                              text: 'บันทึกข้อมูลสำเร็จ!',
+                              icon: 'success',
+                              confirmButtonText: 'OK',
+                              customClass: {
+                                  confirmButton: 'swal2-confirm-custom' // Use the correct CSS class
+                              }
+                          });
+                      } else {
+                          document.getElementById("message").className = "alert alert-danger";
+                      }
+                  })
+                  .withFailureHandler(function(error) {
+                      // Handle any errors that occur during the server call
+                      $('#message').html("Error: " + error.message).addClass('alert alert-danger');
+                      $('#employeePassword').val(''); // Reset the PIN field on failure too
+                      Swal.fire({
+                          title: 'Error!',
+                          text: error.message,
+                          icon: 'error',
+                          confirmButtonText: 'OK',
+                          customClass: {
+                              confirmButton: 'swal2-confirm-custom' // Use the correct CSS class
+                          }
+                      });
+                  })
+                  .businessclockOutWithPin(pin); // Call the server-side function with the PIN
+          } else {
+              // If the PIN field is empty, show an error
+              $('#message').html("กรุณากรอกรหัส PIN ของคุณ.").addClass('alert alert-danger');
+          }
+      }
+
+      function updateDigitalClock() {
+          var now = new Date();
+          var hours = String(now.getHours()).padStart(2, '0');
+          var minutes = String(now.getMinutes()).padStart(2, '0');
+          var seconds = String(now.getSeconds()).padStart(2, '0');
+          var day = String(now.getDate()).padStart(2, '0');
+          var month = String(now.getMonth() + 1).padStart(2, '0'); // January is 0!
+          var year = now.getFullYear();
+
+          document.getElementById("digitalClock").innerHTML = hours + ":" + minutes + ":" + seconds;
+          document.getElementById("currentDate").innerHTML = day + "/" + month + "/" + year;
+      }
+
+      </script>
+    </head>
+  <body>
+    <div style="padding: 10px;">
+        <button type="button" class="btn float-end px-5 text-white" onclick="LogOut()">Log Out</button>
+        <h3 class="mycolor p-2 text-white">WISDOM</h3>
+    <div style="padding: 10px;">
+      <h1>ระบบลงเวลาทำงานออนไลน์</h1>
+      <h2>เวลาปัจจุบัน: <span id="digitalClock">00:00:00</span> วันที่: <span id="currentDate">dd/mm/yyyy</span></h2><br>
+      <form>
+        <div class="form-row">
+          <div class="form-group col-md-4">
+            <label for="employeeNameDisplay"><b>ชื่อพนักงาน</b></label>
+            <div id="employeeNameDisplay" class="form-control"></div> <!-- Employee name display -->
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group col-md-4">
+            <label for="employeePassword"><b>รหัสพนักงาน</b></label>
+            <input type="password" id="employeePassword" class="form-control" placeholder="Enter Password/PIN">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group col-md-4">
+
+          <input type="button" value="ลงเวลาทำงาน" id="clockin" class="btn btn-primary" onclick="ClockIn()" />
+          <input type="button" value="ลงเวลาเลิกงาน" id="clockout" class="btn btn-primary" onclick="ClockOut()" /><br><br>
+          
+          <input type="button" value="ลงเวลาพักครั้งที่1" id="break1clockin" class="btn btn-primary" onclick="Break1ClockIn()" />
+          <input type="button" value="ลงเวลากลับจากพักครั้งที่1" id="break1clockout" class="btn btn-primary" onclick="Break1ClockOut()" /><br><br>
+
+          <input type="button" value="ลงเวลาพักครั้งที่2" id="break2clockin" class="btn btn-primary" onclick="Break2ClockIn()" />
+          <input type="button" value="ลงเวลากลับจากพักครั้งที่2" id="break2clockout" class="btn btn-primary" onclick="Break2ClockOut()" /><br><br>
+
+          <input type="button" value="ลงเวลาเข้าห้องน้ำ+สูบบุหรี่" id="bathroomclockin" class="btn btn-primary" onclick="BathroomClockIn()" />
+          <input type="button" value="ลงเวลากลับเข้าห้องน้ำ+สูบบุหรี่" id="bathroomclockout" class="btn btn-primary" onclick="BathroomClockOut()" /><br><br>
+
+          <input type="button" value="ลงเวลาไปทำธุระ" id="businessclockin" class="btn btn-primary" onclick="BusinessClockIn()" />
+          <input type="button" value="ลงเวลากลับจากไปทำธุระ" id="businessclockout" class="btn btn-primary" onclick="BusinessClockOut()" /><br><br>
+          
+
+          </div>
+        </div>
+        <div class="alert alert-primary" role="alert" id="message"></div>
+      </form>
+    </div>
+  </body>
+</html>
